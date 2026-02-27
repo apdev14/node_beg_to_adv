@@ -1,3 +1,6 @@
+const books = require('./books')
+const createBook = require('./createBook')  
+
 const express = require("express")
 
 const app = express()
@@ -5,11 +8,6 @@ const app = express()
 app.use(express.json());
 
 const PORT = 4000
-
-let books = [
-     { id: 1, title: 'Book One', author: 'Author One' },
-     { id: 2, title: 'Book Two', author: 'Author Two' },
-   ];
 
 app.get('/books', (req, res) => {
     res.json(books)
@@ -35,12 +33,16 @@ app.get('/books/:id', (req, res) => {
 })
 
 app.post('/books', (req, res) => {
-    // add validation for missing fields
-    const newBook = req.body; 
-    newBook.id = books.length + 1
-    books.push(newBook)
-    // console.log(books.length)
-    return res.status(201).json(books)
+
+    const newBook = createBook(req.body)
+    return res.status(201).json(newBook)
+ 
+    // // add validation for missing fields
+    // const newBook = req.body; 
+    // newBook.id = books.length + 1
+    // books.push(newBook)
+    // // console.log(books.length)
+    // return res.status(201).json(books)
 })
 
 app.delete('/books/:id', (req, res) => {
