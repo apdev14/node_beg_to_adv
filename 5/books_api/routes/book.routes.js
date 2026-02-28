@@ -51,12 +51,13 @@ router.delete('/:id', (req, res) => {
         return res.status(404).json({err: `Book with id ${id} does not exist.`})
     }
 
-    // 
-    BOOKS = BOOKS.filter(book => book.id !== id)
-    console.log(BOOKS)
+    const index = BOOKS.findIndex(book => book.id === id)
+    BOOKS.splice(index, 1)
+
+
     return res.json({
         message: `Book ID:${id} deleted`,
-        books: BOOKS
+        book: book
     })
 })
 
