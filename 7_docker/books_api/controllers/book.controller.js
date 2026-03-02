@@ -1,5 +1,6 @@
 const { booksTable } = require('../models/book.model');
 const db = require('../db')
+const { eq, desc } = require('drizzle-orm')
 
 
 const getAllBooks = async (req, res) => {
@@ -12,15 +13,14 @@ const getAllBooks = async (req, res) => {
 }
 
 const getBookById = async (req, res) => {
-    const id = parseInt(req.params.id)  
-    // console.log(req.params.id)
-    // id is str so needs to be parsed 
+    const id = req.params.id
 
-    if(isNaN(id)) {
-        return res.status(400).json({error: `The id must be a number.`})
-    }
+    const book = await db
+    .select()
+    .from(booksTable)
+    .where(eq(booksTable.id, id))
+    .limit(1)
 
-    const book = await db.select().from(booksTable).where(eq(booksTable.id, id))
     if (!book) {
         return res.status(404).json({err: `Book with id ${id} does not exist.`})
     }
@@ -29,43 +29,34 @@ const getBookById = async (req, res) => {
 };
 
 const createBook = async (req, res) => {
-    // add validation for missing fields
-    const newBook = req.body; 
+    const { title, description,authorId } = req.body
     
     // add validation for missing fields
-    if (!newBook.title || !newBook.author) {
-        return res.status(400).json({error: `Missing required fields: title and author.`})
+    if (!title || title === "" ) {
+        return res.status(400).json({error: `Title is required and cannot be empty.`})
     }
-    newBook.id = BOOKS.length + 1
-    BOOKS.push(newBook)
-    // console.log(books.length)
-    return res.status(201).json(BOOKS)
+
+    const [result] = await db.insert(booksTable).values({
+        title,
+        description,
+        authorId,
+    }).returning({
+        id: booksTable.id
+    })
+
+    return res.status(201).json({
+        message: "Book created",
+        id: result.id
+    });
 }
 
-const deleteBook = (req, res) => {
-    // console.log(req.params.id)
-    // id is str so needs to be parsed
-    const id = parseInt(req.params.id)
-    console.log("id:", id)
+const deleteBook = async (req, res) => {
+    const id = req.params.id
 
-    if(isNaN(id)) {
-        return res.status(400).json({error: `The id must be a number.`})
-    }
-
-    let book = BOOKS.find(book => book.id === id)
-    console.log("book:", book)
-
-    if (!book) {
-        return res.status(404).json({err: `Book with id ${id} does not exist.`})
-    }
-
-    const index = BOOKS.findIndex(book => book.id === id)
-    BOOKS.splice(index, 1)
-
+    await db.delete(booksTable).where(eq(booksTable.id, id))
 
     return res.json({
         message: `Book ID:${id} deleted`,
-        book: book
     })
 }
 
