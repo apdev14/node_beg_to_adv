@@ -3,6 +3,7 @@ const { getAllBooks, getBookById, createBook, deleteBook } = require('../control
 
 const router = express.Router();
 
+console.log("hitting routes")
 router.get('/', getAllBooks)
 router.get('/:id', getBookById)
 router.post('/', createBook)

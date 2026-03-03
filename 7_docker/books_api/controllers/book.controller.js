@@ -1,8 +1,8 @@
-const { booksTable } = require('../models/book.model');
+const booksTable = require('../models/book.model');
 const db = require('../db')
-const { eq, desc } = require('drizzle-orm')
+const { eq } = require('drizzle-orm')
 
-
+console.log("hitting controllers")
 const getAllBooks = async (req, res) => {
     try {
         const books = await db.select().from(booksTable)
@@ -15,10 +15,10 @@ const getAllBooks = async (req, res) => {
 const getBookById = async (req, res) => {
     const id = req.params.id
 
-    const book = await db
+    const [book] = await db
     .select()
     .from(booksTable)
-    .where(eq(booksTable.id, id))
+    .where((table) => eq(table.id, id))
     .limit(1)
 
     if (!book) {
@@ -31,7 +31,6 @@ const getBookById = async (req, res) => {
 const createBook = async (req, res) => {
     const { title, description,authorId } = req.body
     
-    // add validation for missing fields
     if (!title || title === "" ) {
         return res.status(400).json({error: `Title is required and cannot be empty.`})
     }
