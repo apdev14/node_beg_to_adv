@@ -1,11 +1,19 @@
 const booksTable = require('../models/book.model');
 const db = require('../db')
-const { eq } = require('drizzle-orm')
+const { eq, ilike, sql } = require('drizzle-orm')
 
 console.log("hitting controllers")
 const getAllBooks = async (req, res) => {
+    const search = req.query.search
+    
     try {
-        const books = await db.select().from(booksTable)
+        let books
+        if (search) {
+            // books = await db.select().from(booksTable).where(ilike(booksTable.title, `%${search}%`))
+            books = await db.select().from(booksTable).where(sql`to_tsvector('english', ${booksTable.title}) @@ to_tsquery('english', ${search})`);
+        } else {
+            books = await db.select().from(booksTable)
+        }
         res.json(books)
     } catch (error) {
         res.status(500).json({ error: error.message })
